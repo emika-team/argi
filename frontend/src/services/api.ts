@@ -168,4 +168,22 @@ export const domainApi = {
     api.delete(`/domain/${userId}/${encodeURIComponent(domain)}`),
 };
 
+// Integrations API
+export const integrationsApi = {
+  validateCloudflareCredentials: (credentials: { email: string; apiKey: string }): Promise<AxiosResponse<{ valid: boolean; userInfo?: any }>> =>
+    api.post('/integrations/cloudflare/validate', credentials),
+
+  getCloudflareZones: (credentials: { email: string; apiKey: string }): Promise<AxiosResponse<{ success: boolean; data: any[]; count: number }>> =>
+    api.post('/integrations/cloudflare/zones', credentials),
+
+  importFromCloudflare: (importData: { email: string; apiKey: string; userId: string }): Promise<AxiosResponse<{ success: boolean; data: any }>> =>
+    api.post('/integrations/cloudflare/import', importData),
+
+  getProviderSummary: (userId: string): Promise<AxiosResponse<{ success: boolean; data: any }>> =>
+    api.get(`/integrations/summary/${userId}`),
+
+  testCloudflareConnection: (): Promise<AxiosResponse<{ success: boolean; message: string; provider: string; version: string }>> =>
+    api.get('/integrations/cloudflare/test'),
+};
+
 export default api; 

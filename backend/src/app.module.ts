@@ -12,6 +12,7 @@ import { SslModule } from './ssl/ssl.module';
 import { DomainModule } from './domain/domain.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { BullBoardModule } from './bull-board/bull-board.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -60,6 +61,7 @@ import { HealthController } from './health/health.controller';
     DomainModule,
     DashboardModule,
     BullBoardModule,
+    IntegrationsModule,
   ],
   controllers: [HealthController],
 })

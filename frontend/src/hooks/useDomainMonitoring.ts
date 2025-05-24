@@ -60,6 +60,7 @@ export const useDomainMonitoring = ({
     try {
       setLoading(true);
       setError(null);
+      console.log('fetchDomains');
       const currentUserId = getCurrentUserId();
       const response = await domainApi.getUserDomains(currentUserId);
       
@@ -83,21 +84,11 @@ export const useDomainMonitoring = ({
       
       setError('Failed to fetch domain list');
       console.error('Error fetching domains:', err);
-      
-      // Fallback to initial domains if provided
-      if (initialDomains.length > 0) {
-        const fallbackDomains: DomainCheck[] = initialDomains.map(domain => ({
-          domain,
-          error: undefined,
-          isExpired: false,
-          isExpiringSoon: false,
-        }));
-        setDomains(fallbackDomains);
-      }
+    
     } finally {
       setLoading(false);
     }
-  }, [getCurrentUserId, initialDomains]);
+  }, [getCurrentUserId]);
 
   const fetchDomainsWithStatus = useCallback(async () => {
     try {

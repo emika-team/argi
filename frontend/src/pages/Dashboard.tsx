@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
 
   // Use domain monitoring hook for background stats
   const { domains: domainStats } = useDomainMonitoring({
-    autoRefresh: true,
+    autoRefresh: false,
     refreshInterval: 300000, // 5 minutes
   });
 
