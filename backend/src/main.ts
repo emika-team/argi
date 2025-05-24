@@ -39,10 +39,12 @@ async function bootstrap() {
   serverAdapter.setBasePath('/admin/queues');
 
   const monitoringQueue = app.get(getQueueToken('monitoring'));
+  const domainQueue = app.get(getQueueToken('domain-monitoring'));
 
   createBullBoard({
     queues: [
       new BullAdapter(monitoringQueue),
+      new BullAdapter(domainQueue),
     ],
     serverAdapter: serverAdapter,
   });

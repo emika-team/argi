@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as whois from 'whois';
@@ -18,6 +18,8 @@ export interface DomainResult {
 
 @Injectable()
 export class DomainService {
+  private readonly logger = new Logger('DomainService');
+
   constructor(
     @InjectModel(Domain.name) private domainModel: Model<DomainDocument>,
   ) {}
@@ -36,6 +38,8 @@ export class DomainService {
           });
           return;
         }
+
+        this.logger.debug(`checkDomainExpiry: ${domain}`);
 
         try {
           const expiryMatch = data.match(/Registry Expiry Date:\s*(.+)/i) ||
@@ -182,6 +186,11 @@ export class DomainService {
   async updateDomainStatus(domainId: string, result: DomainResult): Promise<void> {
     if (!this.isValidObjectId(domainId)) {
       throw new BadRequestException('Invalid domain ID format');
+    }
+
+    if (result.error) {
+      this.logger.error(`Error checking domain ${domainId}: ${result.error}`);
+      return;
     }
 
     const updateData: any = {

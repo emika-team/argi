@@ -21,7 +21,7 @@ export class DomainQueueService implements OnModuleInit {
       // Remove existing repeatable jobs with the same name to avoid duplicates
       const repeatableJobs = await this.domainQueue.getRepeatableJobs();
       for (const job of repeatableJobs) {
-        if (job.name === 'check-all-domains') {
+        if (job.name == 'check-all-domains') {
           await this.domainQueue.removeRepeatableByKey(job.key);
         }
       }
@@ -32,7 +32,7 @@ export class DomainQueueService implements OnModuleInit {
         { type: 'check-all-domains' },
         {
           repeat: { 
-            cron: '*/5 * * * *' // Every 5 minutes
+            cron: '*/1 * * * *' // Every 5 minutes
           },
           removeOnComplete: 10, // Keep last 10 completed jobs
           removeOnFail: 50, // Keep last 50 failed jobs
