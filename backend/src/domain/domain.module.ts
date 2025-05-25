@@ -5,7 +5,7 @@ import { BullModule } from '@nestjs/bull';
 import { DomainService } from './domain.service';
 import { DomainController } from './domain.controller';
 import { DomainScheduler } from './domain.scheduler';
-import { DomainProcessor, DOMAIN_QUEUE } from './domain.processor';
+import { DomainProcessorFactory, LegacyDomainProcessor } from './domain.processor';
 import { DomainQueueService } from './domain-queue.service';
 import { Domain, DomainSchema } from './schemas/domain.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
@@ -16,17 +16,17 @@ import { User, UserSchema } from '../auth/schemas/user.schema';
       { name: Domain.name, schema: DomainSchema },
       { name: User.name, schema: UserSchema },
     ]),
-    BullModule.registerQueue({
-      name: DOMAIN_QUEUE,
-    }),
+    // Note: Individual domain queues will be created dynamically
+    // No need to register a global domain queue here
   ],
   controllers: [DomainController],
   providers: [
     DomainService, 
     DomainScheduler, 
-    DomainProcessor,
+    DomainProcessorFactory,
+    LegacyDomainProcessor, // Keep for backward compatibility
     DomainQueueService
   ],
-  exports: [DomainService, DomainQueueService],
+  exports: [DomainService, DomainQueueService, DomainProcessorFactory],
 })
 export class DomainModule {} 

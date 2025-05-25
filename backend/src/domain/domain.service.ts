@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as whois from 'whois';
@@ -21,7 +21,7 @@ export class DomainService {
   private readonly logger = new Logger('DomainService');
 
   constructor(
-    @InjectModel(Domain.name) private domainModel: Model<DomainDocument>,
+    @InjectModel(Domain.name) private domainModel: Model<DomainDocument>
   ) {}
 
   private isValidObjectId(id: string): boolean {

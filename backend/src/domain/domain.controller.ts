@@ -74,7 +74,20 @@ export class DomainController {
     @Param('userId') userId: string,
     @Body() createDomainDto: CreateDomainDto
   ) {
-    return this.domainService.addDomainToUser(userId, createDomainDto);
+    const domain = await this.domainService.addDomainToUser(userId, createDomainDto);
+    
+    // Setup individual queue monitoring for this domain
+    try {
+      await this.domainQueueService.setupDomainMonitoring(
+        domain.domain, 
+        domain._id.toString(),
+        60 // Check every 60 minutes
+      );
+    } catch (error) {
+      console.error(`Failed to setup monitoring for domain ${domain.domain}:`, error);
+    }
+    
+    return domain;
   }
 
   @Put('user/:userId/domains/:domain')
@@ -92,6 +105,14 @@ export class DomainController {
     @Param('domain') domain: string
   ) {
     await this.domainService.removeDomainFromUser(userId, domain);
+    
+    // Remove queue monitoring for this domain
+    try {
+      await this.domainQueueService.removeDomainMonitoring(domain.toLowerCase());
+    } catch (error) {
+      console.error(`Failed to remove monitoring for domain ${domain}:`, error);
+    }
+    
     return { success: true, message: 'Domain deleted successfully' };
   }
 
@@ -119,22 +140,15 @@ export class DomainController {
     return result;
   }
 
-  // Queue management endpoints
+  // Updated queue management endpoints
   @Get('queue/stats')
   async getQueueStats() {
-    return this.domainQueueService.getQueueStats();
+    return this.domainQueueService.getAllDomainsStats();
   }
 
-  @Post('queue/check-all')
-  async triggerAllDomainsCheck() {
-    await this.domainQueueService.addAllDomainsCheck();
-    return { success: true, message: 'All domains check job added to queue' };
-  }
-
-  @Post('queue/check-user/:userId')
-  async triggerUserDomainsCheck(@Param('userId') userId: string) {
-    await this.domainQueueService.addUserDomainsCheck(userId);
-    return { success: true, message: `User domains check job added to queue for user: ${userId}` };
+  @Get('queue/stats/:domain')
+  async getDomainQueueStats(@Param('domain') domain: string) {
+    return this.domainQueueService.getDomainQueueStats(domain);
   }
 
   @Post('queue/check-domain')
@@ -144,21 +158,53 @@ export class DomainController {
     return { success: true, message: `Single domain check job added to queue for: ${domain}` };
   }
 
-  @Post('queue/pause')
-  async pauseQueue() {
-    await this.domainQueueService.pauseQueue();
-    return { success: true, message: 'Domain monitoring queue paused' };
+  @Post('queue/setup-user-monitoring/:userId')
+  async setupUserDomainsMonitoring(@Param('userId') userId: string) {
+    const userDomains = await this.domainService.getUserDomainsDetailed(userId);
+    const domainData = userDomains.map(d => ({
+      domain: d.domain,
+      domainId: d._id.toString()
+    }));
+    
+    await this.domainQueueService.setupUserDomainsMonitoring(domainData);
+    return { 
+      success: true, 
+      message: `Setup monitoring for ${domainData.length} domains for user: ${userId}`,
+      domains: domainData.map(d => d.domain)
+    };
   }
 
-  @Post('queue/resume')
-  async resumeQueue() {
-    await this.domainQueueService.resumeQueue();
-    return { success: true, message: 'Domain monitoring queue resumed' };
+  @Post('queue/pause/:domain')
+  async pauseDomainQueue(@Param('domain') domain: string) {
+    await this.domainQueueService.pauseDomainQueue(domain);
+    return { success: true, message: `Domain queue paused for: ${domain}` };
   }
 
-  @Post('queue/clear')
-  async clearQueue() {
-    await this.domainQueueService.clearQueue();
-    return { success: true, message: 'Domain monitoring queue cleared' };
+  @Post('queue/resume/:domain')
+  async resumeDomainQueue(@Param('domain') domain: string) {
+    await this.domainQueueService.resumeDomainQueue(domain);
+    return { success: true, message: `Domain queue resumed for: ${domain}` };
+  }
+
+  @Post('queue/clear/:domain')
+  async clearDomainQueue(@Param('domain') domain: string) {
+    await this.domainQueueService.clearDomainQueue(domain);
+    return { success: true, message: `Domain queue cleared for: ${domain}` };
+  }
+
+  @Delete('queue/remove/:domain')
+  async removeDomainQueue(@Param('domain') domain: string) {
+    await this.domainQueueService.removeDomainMonitoring(domain);
+    return { success: true, message: `Monitoring removed for domain: ${domain}` };
+  }
+
+  @Get('queue/active-domains')
+  async getActiveDomains() {
+    const domains = this.domainQueueService.getActiveDomains();
+    return { 
+      success: true, 
+      totalDomains: domains.length,
+      domains 
+    };
   }
 } 

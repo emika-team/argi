@@ -189,17 +189,6 @@ export const useDomainMonitoring = ({
     fetchDomains();
   }, [fetchDomains]);
 
-  // Background status check after getting domain list
-  useEffect(() => {
-    if (domains.length > 0 && domains.every(d => d.error === undefined)) {
-      // Only run background status check if we have domains and they're not already checked
-      const timer = setTimeout(() => {
-        fetchDomainsWithStatus();
-      }, 1000); // Delay 1 second to let UI load first
-
-      return () => clearTimeout(timer);
-    }
-  }, [domains.length, fetchDomainsWithStatus]);
 
   // Optional auto-refresh for domain list (fast)
   useEffect(() => {
