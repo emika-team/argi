@@ -4,6 +4,7 @@ import { Queue } from 'bull';
 import { ModuleRef } from '@nestjs/core';
 import { BullModule } from '@nestjs/bull';
 import { DomainProcessorFactory, DomainProcessor } from './domain.processor';
+import type { DomainService } from './domain.service';
 
 // Base queue name for domain monitoring
 export const DOMAIN_MONITORING_QUEUE_PREFIX = 'domain-monitoring';
@@ -242,6 +243,58 @@ export class DomainQueueService implements OnModuleInit {
       totalDomains: this.domainQueues.size,
       domains: stats
     };
+  }
+
+  // Method expected by DomainScheduler - returns aggregated queue statistics
+  async getQueueStats() {
+    let totalWaiting = 0;
+    let totalActive = 0;
+    let totalCompleted = 0;
+    let totalFailed = 0;
+    let totalRepeatableJobs = 0;
+
+    for (const [domain] of this.domainQueues) {
+      const domainStats = await this.getDomainQueueStats(domain);
+      if (domainStats) {
+        totalWaiting += domainStats.waiting;
+        totalActive += domainStats.active;
+        totalCompleted += domainStats.completed;
+        totalFailed += domainStats.failed;
+        totalRepeatableJobs += domainStats.repeatableJobs;
+      }
+    }
+
+    return {
+      waiting: totalWaiting,
+      active: totalActive,
+      completed: totalCompleted,
+      failed: totalFailed,
+      repeatableJobs: totalRepeatableJobs,
+      totalQueues: this.domainQueues.size
+    };
+  }
+
+  // Method expected by DomainScheduler - triggers check for all domains
+  async addAllDomainsCheck(): Promise<void> {
+    try {
+      // Get DomainService dynamically to avoid circular dependency
+      const domainService = this.moduleRef.get<DomainService>('DomainService', { strict: false });
+      
+      // Get all active domains
+      const domains = await domainService.getAllActiveDomains();
+      
+      this.logger.log(`Adding checks for ${domains.length} active domains`);
+      
+      // Add single check job for each domain
+      for (const domainData of domains) {
+        await this.addSingleDomainCheck(domainData.domain, domainData._id.toString());
+      }
+      
+      this.logger.log(`Successfully added check jobs for all ${domains.length} domains`);
+    } catch (error) {
+      this.logger.error('Failed to add all domains check:', error);
+      throw error;
+    }
   }
 
   async pauseDomainQueue(domain: string): Promise<void> {

@@ -34,23 +34,6 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix('api');
 
-  // Bull Board Setup
-  const serverAdapter = new ExpressAdapter();
-  serverAdapter.setBasePath('/admin/queues');
-
-  const monitoringQueue = app.get(getQueueToken('monitoring'));
-  const domainQueue = app.get(getQueueToken('domain-monitoring'));
-
-  createBullBoard({
-    queues: [
-      new BullAdapter(monitoringQueue),
-      new BullAdapter(domainQueue),
-    ],
-    serverAdapter: serverAdapter,
-  });
-
-  app.use('/admin/queues', serverAdapter.getRouter());
-
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Uptime Monitor API')
