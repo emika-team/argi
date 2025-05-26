@@ -11,17 +11,21 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Lock as LockIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LoginRequest } from '../types';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading, error, clearError, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
   });
+
+  // ดึง location ที่ผู้ใช้พยายามเข้าถึงก่อนถูกส่งมาที่หน้า login
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,7 +37,8 @@ const Login: React.FC = () => {
     e.preventDefault();
     try {
       await login(formData);
-      navigate('/dashboard');
+      // redirect กลับไปยังหน้าที่ผู้ใช้พยายามเข้าถึงก่อนหน้า
+      navigate(from, { replace: true });
     } catch (err) {
       // Error is handled by useAuth hook
     }
