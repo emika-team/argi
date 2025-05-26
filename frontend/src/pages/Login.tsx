@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -17,7 +17,7 @@ import { LoginRequest } from '../types';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loading, error, clearError } = useAuth();
+  const { login, loading, error, clearError, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',

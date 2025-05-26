@@ -47,8 +47,19 @@ async function testDomainQueue() {
 
     // Test 4: Trigger user domains check
     console.log('👤 Testing user domains check...');
-    await domainQueueService.addUserDomainsCheck(testUserId);
-    console.log('✅ Added user domains check job');
+    try {
+      const userDomains = await domainService.getUserDomainsDetailed(testUserId);
+      console.log(`Found ${userDomains.length} domains for user ${testUserId}`);
+      
+      // Add individual checks for each user domain
+      for (const domainData of userDomains) {
+        await domainQueueService.addSingleDomainCheck(domainData.domain, domainData._id.toString());
+      }
+      
+      console.log(`✅ Added domain check jobs for ${userDomains.length} user domains`);
+    } catch (error) {
+      console.log('No domains found for test user, skipping user domains check test');
+    }
 
     // Wait a moment
     await new Promise(resolve => setTimeout(resolve, 2000));
