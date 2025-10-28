@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Paper,
@@ -11,21 +11,17 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Lock as LockIcon } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { LoginRequest } from '../types';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, loading, error, clearError, isAuthenticated } = useAuth();
+  const { login, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
   });
-
-  // ดึง location ที่ผู้ใช้พยายามเข้าถึงก่อนถูกส่งมาที่หน้า login
-  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,8 +33,8 @@ const Login: React.FC = () => {
     e.preventDefault();
     try {
       await login(formData);
-      // redirect กลับไปยังหน้าที่ผู้ใช้พยายามเข้าถึงก่อนหน้า
-      navigate(from, { replace: true });
+      // Navigation will be handled automatically by ProtectedRoute
+      // when isAuthenticated changes to true
     } catch (err) {
       // Error is handled by useAuth hook
     }

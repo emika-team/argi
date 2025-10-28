@@ -1,0 +1,26 @@
+{
+  "name": "uptime-monitor",
+  "version": "1.0.0",
+  "description": "Uptime and Domain Monitoring System",
+  "scripts": {
+    "setup": "./dev.sh setup",
+    "start": "./dev.sh start",
+    "stop": "./dev.sh stop",
+    "restart": "./dev.sh restart",
+    "status": "./dev.sh status",
+    "logs": "./dev.sh logs",
+    "clean": "./dev.sh clean"
+  },
+  "keywords": [
+    "monitoring",
+    "uptime",
+    "domain",
+    "nestjs",
+    "react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

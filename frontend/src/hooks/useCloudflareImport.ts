@@ -25,7 +25,7 @@ export interface ImportResult {
 }
 
 export interface CloudflareCredentials {
-  email: string;
+  email?: string;
   apiKey: string;
 }
 

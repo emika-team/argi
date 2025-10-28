@@ -61,7 +61,7 @@ const CloudflareImport: React.FC<CloudflareImportProps> = ({
   const steps = ['Enter Credentials', 'Preview Domains', 'Import Results'];
 
   const handleCredentialsSubmit = async () => {
-    if (!credentials.email || !credentials.apiKey) {
+    if (!credentials.apiKey) {
       return;
     }
 
@@ -102,28 +102,32 @@ const CloudflareImport: React.FC<CloudflareImportProps> = ({
       </Typography>
       
       <Alert severity="info" sx={{ mb: 3 }}>
-        You can find your API key in Cloudflare dashboard → My Profile → API Tokens → Global API Key
+        <strong>Option 1 (Recommended):</strong> Use an API Token with "Zone:Read" permissions<br/>
+        Create one at: Cloudflare dashboard → My Profile → API Tokens → Create Token<br/>
+        <br/>
+        <strong>Option 2:</strong> Use your Global API Key + Email<br/>
+        Find it at: Cloudflare dashboard → My Profile → API Tokens → Global API Key
       </Alert>
 
       <TextField
         fullWidth
-        label="Email"
+        label="Email (Optional for API Token)"
         type="email"
         value={credentials.email}
         onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
         margin="normal"
-        required
+        helperText="Only required if using Global API Key (not needed for API Token)"
       />
       
       <TextField
         fullWidth
-        label="API Key"
+        label="API Token or API Key"
         type="password"
         value={credentials.apiKey}
         onChange={(e) => setCredentials({ ...credentials, apiKey: e.target.value })}
         margin="normal"
         required
-        helperText="Your Global API Key from Cloudflare"
+        helperText="Enter your API Token (recommended) or Global API Key"
       />
     </Box>
   );
@@ -276,7 +280,7 @@ const CloudflareImport: React.FC<CloudflareImportProps> = ({
             <Button 
               variant="contained" 
               onClick={handleCredentialsSubmit}
-              disabled={loading || !credentials.email || !credentials.apiKey}
+              disabled={loading || !credentials.apiKey}
             >
               {loading ? <CircularProgress size={20} /> : 'Connect'}
             </Button>

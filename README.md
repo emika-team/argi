@@ -1,220 +1,439 @@
-# 🚀 ระบบตรวจสอบสถานะ Uptime และ Domain Monitor
+# 🎯 Uptime & Domain Monitor
 
-![Project Logo](logo.png)
+A comprehensive full-stack monitoring system for tracking website uptime, domain expiration, and SSL certificates. Built with NestJS, React, MongoDB, and Redis.
 
-## 📖 เกี่ยวกับโปรเจค
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-ระบบตรวจสอบสถานะ Uptime และ Domain Monitor เป็นแอปพลิเคชันที่ออกแบบมาเพื่อตรวจสอบและติดตามสถานะของเว็บไซต์ และโดเมนต่างๆ อย่างต่อเนื่อง โดยมีจุดประสงค์หลักเพื่อให้ผู้ใช้งานสามารถทราบสถานะของเซอร์วิสออนไลน์ได้แบบเรียลไทม์
+## 📖 About the Project
 
-## ✨ ฟีเจอร์หลัก
+A complete monitoring solution for tracking website uptime, domain expiration dates, and SSL certificates. Designed to provide real-time status updates and automated checks with a beautiful dashboard interface
 
-### 🔍 การตรวจสอบ Uptime
-- ✅ ตรวจสอบสถานะเว็บไซต์แบบเรียลไทม์
-- ⏱️ วัดเวลา Response Time
-- 📊 สร้างกราฟแสดงสถิติการทำงาน
-- 🔔 แจ้งเตือนเมื่อเซอร์วิสล่ม
+## ✨ Features
 
-### 🌐 การตรวจสอบ Domain
-- 🔐 ตรวจสอบวันหมดอายุของ SSL Certificate
-- 📅 ตรวจสอบวันหมดอายุของโดเมน
-- 🔒 ตรวจสอบความปลอดภัยของเว็บไซต์
-- ⚠️ แจ้งเตือนก่อนหมดอายุ
+### 🔍 Uptime Monitoring
+- ✅ Real-time website status checks
+- ⏱️ Response time measurement
+- 📊 Multiple protocol support (HTTP/HTTPS/PING/TCP)
+- � Historical data tracking
+- �🔔 Automated alerts on failures
 
-### 📱 Dashboard และ Monitoring
-- 📈 หน้าแดชบอร์ดแสดงสถานะภาพรวม
-- 📋 รายงานสถิติการทำงาน
-- 🕐 ประวัติการทำงานย้อนหลัง
-- 📧 ระบบแจ้งเตือนผ่าน Email/LINE/Discord
+### 🌐 Domain Monitoring
+- 📅 Domain expiration date tracking via WHOIS
+- ⚠️ Automated alerts before expiration
+- ☁️ Cloudflare integration for bulk import
+- � Automatic checks every 60 minutes
+- 📋 Comprehensive domain list management
 
-## 🛠️ เทคโนโลยีที่ใช้
+### 🔒 SSL Certificate Monitoring
+- � SSL certificate expiration tracking
+- 🔒 Security validation
+- 📊 Certificate details viewing
+
+### 📱 Dashboard & Reporting
+- 📈 Real-time dashboard with statistics
+- � Visual charts and graphs
+- � Detailed history logs
+- 📧 Email/notification system
+- 🎯 Queue monitoring with Bull Board
+
+## 🛠️ Tech Stack
 
 ### Backend
-- **Language**: Python/Node.js
-- **Framework**: FastAPI/Express.js
-- **Database**: PostgreSQL/MongoDB
-- **Task Queue**: Celery/Bull
+- **Framework**: NestJS (TypeScript)
+- **Database**: MongoDB with Mongoose
+- **Cache & Queue**: Redis + Bull
+- **Authentication**: JWT + Passport
+- **Validation**: class-validator
+- **API Docs**: Swagger/OpenAPI
+- **WebSockets**: Socket.IO
+- **Task Scheduling**: node-cron
 
 ### Frontend
-- **Framework**: React.js/Vue.js
-- **UI Library**: Material-UI/Ant Design
-- **Charts**: Chart.js/D3.js
-- **Real-time**: WebSocket
+- **Framework**: React 18 (TypeScript)
+- **UI Library**: Material-UI (MUI)
+- **State Management**: React Hooks
+- **HTTP Client**: Axios
+- **Routing**: React Router v6
+- **Forms**: React Hook Form + Yup
+- **Charts**: Chart.js + react-chartjs-2
 
 ### Infrastructure
 - **Containerization**: Docker
 - **Orchestration**: Docker Compose
-- **Monitoring**: Prometheus + Grafana
-- **Deployment**: AWS/GCP/Azure
+- **Reverse Proxy**: Nginx
+- **Monitoring**: Bull Board
 
-## 🚀 การติดตั้งและใช้งาน
+### External Services
+- **WHOIS**: Domain expiry lookups
+- **Cloudflare API**: Domain import
+- **Email**: Nodemailer (SMTP)
 
-### ความต้องการของระบบ
-- Docker และ Docker Compose
-- Git
-- Port 3000 (Frontend) และ 8000 (Backend)
+## 🚀 Quick Start
 
-### วิธีการติดตั้ง
+### Prerequisites
+- **Docker** and **Docker Compose** installed and running
+- **Node.js** 18+ and **npm** (for local development)
+- **Git**
 
-1. **Clone โปรเจค**
+### Development Setup (Recommended)
+
+1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/uptime-domain-monitor.git
-cd uptime-domain-monitor
+git clone <repository-url>
+cd argi
 ```
 
-2. **ตั้งค่า Environment Variables**
+2. **Setup and start everything**
 ```bash
-cp .env.example .env
-# แก้ไขค่าใน .env ตามความต้องการ
+chmod +x dev.sh
+./dev.sh setup    # First time: setup infrastructure & install dependencies
+./dev.sh start    # Start all services
 ```
 
-3. **รันด้วย Docker Compose**
+3. **Access the application**
+- 🌐 Frontend: http://localhost:3000
+- 🔧 Backend API: http://localhost:8000
+- 📚 API Docs: http://localhost:8000/api/docs
+- 📊 Queue Dashboard: http://localhost:8000/admin/queues
+
+### Alternative: Full Docker Setup
+
 ```bash
+# Start all services (including backend and frontend)
 docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
 ```
 
-4. **เข้าใช้งาน**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- Grafana Dashboard: http://localhost:3001
+**Note**: The full Docker setup is for production. For development, use the scripts above for better hot-reload experience.
 
-### การตั้งค่าเบื้องต้น
+## 📊 Usage Guide
 
-1. **เพิ่มเว็บไซต์ที่ต้องการตรวจสอบ**
-2. **ตั้งค่าการแจ้งเตือน**
-3. **กำหนดช่วงเวลาการตรวจสอบ**
-4. **ตั้งค่า Alert Rules**
+### Adding a New Monitor
+1. Navigate to "Monitors" page
+2. Click "Add New Monitor"
+3. Enter website URL
+4. Select monitor type (HTTP/HTTPS/TCP/PING)
+5. Set check interval
+6. Save the monitor
 
-## 📊 การใช้งาน
+### Viewing Dashboard
+- **Overview**: Overall system status
+- **Uptime Stats**: Uptime statistics and trends
+- **Response Time**: Response time graphs
+- **SSL Monitor**: SSL certificate status
+- **Domain Expiry**: Domain expiration tracking
 
-### การเพิ่มเว็บไซต์ใหม่
-1. ไปที่หน้า "Add New Monitor"
-2. ใส่ URL ของเว็บไซต์
-3. เลือกประเภทการตรวจสอบ (HTTP/HTTPS/TCP/PING)
-4. ตั้งค่าช่วงเวลาการตรวจสอบ
-5. กดบันทึก
+### Configuring Cloudflare Integration
+1. Go to "Integrations" page
+2. Click "Cloudflare Import"
+3. Enter your Cloudflare API credentials
+4. Select zones to import
+5. Import domains
 
-### การดู Dashboard
-- **Overview**: ภาพรวมสถานะทั้งหมด
-- **Uptime Stats**: สถิติการทำงาน
-- **Response Time**: กราฟเวลา Response
-- **SSL Monitor**: สถานะ SSL Certificate
-- **Domain Expiry**: วันหมดอายุโดเมน
+### Setting Up Alerts
+1. Navigate to "Settings"
+2. Configure email SMTP settings
+3. Set alert thresholds
+4. Test notification delivery
 
-### การตั้งค่าการแจ้งเตือน
-1. ไปที่หน้า "Alert Settings"
-2. เลือกช่องทางการแจ้งเตือน
-3. ตั้งค่าเงื่อนไขการแจ้งเตือน
-4. ทดสอบการส่งข้อความ
+## 🔧 Configuration
 
-## 🔧 การตั้งค่าขั้นสูง
+### Environment Variables
 
-### การตั้งค่า Database
-```yaml
-# docker-compose.yml
-database:
-  image: postgres:13
-  environment:
-    POSTGRES_DB: monitor_db
-    POSTGRES_USER: admin
-    POSTGRES_PASSWORD: password
+#### Backend (`backend/.env`)
+```env
+# Database
+MONGODB_URI=mongodb://admin:password123@localhost:27017/monitor_db?authSource=admin
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Application
+NODE_ENV=development
+PORT=8000
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRY=7d
+
+# Email (optional for development)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+ENABLE_EMAIL_ALERTS=false
+
+# Monitoring
+DEFAULT_CHECK_INTERVAL=60
+SSL_CHECK_INTERVAL=86400
+DOMAIN_CHECK_INTERVAL=86400
+MAX_RETRIES=3
+TIMEOUT=30000
 ```
 
-### การตั้งค่า Monitoring Intervals
-```json
-{
-  "default_interval": 60,
-  "critical_sites": 30,
-  "ssl_check": 86400,
-  "domain_check": 86400
-}
+#### Frontend (`frontend/.env`)
+```env
+REACT_APP_API_URL=http://localhost:8000/api
+REACT_APP_WS_URL=ws://localhost:8000
+PORT=3000
 ```
+
+### Advanced Configuration
+
+#### Custom Check Intervals
+Modify intervals in `backend/.env`:
+```env
+DEFAULT_CHECK_INTERVAL=60        # Uptime checks (seconds)
+DOMAIN_CHECK_INTERVAL=3600       # Domain checks (seconds)
+SSL_CHECK_INTERVAL=86400         # SSL checks (seconds)
+```
+
+#### Queue Configuration
+Bull queues are configured in `backend/src/domain/domain-queue.service.ts`:
+- Individual queues per domain
+- Automatic retry on failure
+- Job cleanup after completion
 
 ## 📈 API Documentation
 
-### Endpoints หลัก
-- `GET /api/monitors` - รายการเว็บไซต์ที่ตรวจสอบ
-- `POST /api/monitors` - เพิ่มเว็บไซต์ใหม่
-- `GET /api/stats/{monitor_id}` - สถิติของเว็บไซต์
-- `GET /api/uptime/{monitor_id}` - ข้อมูล Uptime
-- `GET /api/ssl/{domain}` - ข้อมูล SSL Certificate
+### Main Endpoints
 
-### Authentication
+#### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/profile` - Get user profile
+
+#### Monitors
+- `GET /api/monitors` - List all monitors
+- `POST /api/monitors` - Create new monitor
+- `GET /api/monitors/:id` - Get monitor details
+- `PATCH /api/monitors/:id` - Update monitor
+- `DELETE /api/monitors/:id` - Delete monitor
+- `GET /api/monitors/:id/stats` - Get monitor statistics
+- `POST /api/monitors/bulk-check` - Trigger bulk check
+
+#### Domains
+- `GET /api/domain/check/:domain` - Check domain expiry
+- `POST /api/domain/add` - Add domain to monitoring
+- `GET /api/domain/user/:userId/domains` - List user domains
+- `DELETE /api/domain/:userId/:domain` - Remove domain
+- `GET /api/domain/expiring` - Get expiring domains
+- `GET /api/domain/queue/stats` - Get queue statistics
+
+#### Integrations
+- `POST /api/integrations/cloudflare/validate` - Validate Cloudflare credentials
+- `POST /api/integrations/cloudflare/zones` - Fetch Cloudflare zones
+- `POST /api/integrations/cloudflare/import` - Import domains from Cloudflare
+- `GET /api/integrations/summary/:userId` - Get integration summary
+
+#### Dashboard
+- `GET /api/dashboard` - Get dashboard statistics
+
+### Authentication Example
 ```bash
-# ใช้ Bearer Token
+# Login
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password"}'
+
+# Use token
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-     -X GET https://your-domain.com/api/monitors
+     -X GET http://localhost:8000/api/monitors
 ```
 
-## 🔐 Security
+### Interactive API Docs
+Visit http://localhost:8000/api/docs for complete interactive Swagger documentation.
 
-- 🔑 JWT Authentication
-- 🛡️ Rate Limiting
-- 🔒 HTTPS Only
-- 🔐 API Key Management
-- 📝 Audit Logging
+## 🔐 Security Features
 
-## 🐛 การแก้ไขปัญหา
+- 🔑 JWT-based authentication
+- 🛡️ Rate limiting with Throttler
+- 🔒 Password hashing with bcrypt
+- 🌐 CORS configuration
+- ✅ Input validation with class-validator
+- 🔐 Environment variable management
+- 📝 Audit logging
 
-### ปัญหาที่พบบ่อย
+## 🐛 Troubleshooting
 
-**Q: ระบบไม่สามารถตรวจสอบเว็บไซต์ได้**
-A: ตรวจสอบ Network connectivity และ Firewall settings
+### Common Issues
 
-**Q: การแจ้งเตือนไม่ทำงาน**
-A: ตรวจสอบการตั้งค่า SMTP และ API Keys
-
-**Q: Database Connection Error**
-A: ตรวจสอบการตั้งค่า Database ใน .env file
-
-### Log Files
+**Q: Cannot connect to MongoDB**
 ```bash
-# ดู logs ของ application
-docker-compose logs -f app
+# Check MongoDB status
+docker ps | grep mongodb
+docker logs monitor_mongodb
 
-# ดู logs ของ database
-docker-compose logs -f db
+# Restart MongoDB
+docker-compose restart mongodb
 ```
 
-## 🤝 การมีส่วนร่วม
+**Q: Cannot connect to Redis**
+```bash
+# Test Redis connection
+docker exec monitor_redis redis-cli ping
 
-1. Fork โปรเจค
-2. สร้าง Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit การเปลี่ยนแปลง (`git commit -m 'Add some AmazingFeature'`)
-4. Push ไป Branch (`git push origin feature/AmazingFeature`)
-5. เปิด Pull Request
+# Should return: PONG
+```
+
+**Q: Port already in use**
+```bash
+# Find process using port
+lsof -i :8000
+lsof -i :3000
+
+# Kill the process or change port in .env
+```
+
+**Q: Backend won't start**
+```bash
+# Clean install dependencies
+cd backend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Q: Frontend build errors**
+```bash
+# Clean install
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Viewing Logs
+```bash
+# All Docker services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f mongodb
+docker-compose logs -f redis
+
+# Backend logs (when running locally)
+cd backend
+npm run start:dev
+
+# Check queue dashboard
+# Visit: http://localhost:8000/admin/queues
+```
+
+### Database Reset
+```bash
+# Stop and remove volumes (⚠️ deletes all data)
+docker-compose down -v
+
+# Start fresh
+./dev-setup.sh
+```
+
+## 📚 Documentation
+
+- **[Development Setup Guide](./DEV_SETUP.md)** - Detailed development setup
+- **[Backend README](./backend/README.md)** - Backend architecture
+- **[Domain API Guide](./backend/DOMAIN_API.md)** - Domain monitoring API
+- **[Integration Examples](./backend/INTEGRATION_EXAMPLES.md)** - Third-party integrations
+- **[Monitoring Documentation](./backend/DOMAIN_MONITORING.md)** - Monitoring features
+
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow TypeScript best practices
+- Write tests for new features
+- Update documentation
+- Follow existing code style
+- Ensure all tests pass before submitting PR
+
+## 📝 Available Scripts
+
+### Root Directory
+```bash
+./dev.sh setup       # Setup everything (first time only)
+./dev.sh start       # Start all services
+./dev.sh stop        # Stop all services
+./dev.sh restart     # Restart all services
+./dev.sh status      # Show status of all services
+./dev.sh logs        # View logs (backend/frontend/all)
+./dev.sh clean       # Stop and clean up everything
+```
+
+Or use npm scripts:
+```bash
+npm run setup        # Setup everything
+npm start            # Start all services
+npm stop             # Stop all services
+npm run status       # Show status
+```
+
+### Backend
+```bash
+cd backend
+npm run start:dev      # Start with hot reload
+npm run start:debug    # Start with debugging
+npm run build          # Build for production
+npm run start:prod     # Start production build
+npm run test           # Run tests
+npm run test:watch     # Run tests in watch mode
+npm run test:cov       # Generate coverage report
+```
+
+### Frontend
+```bash
+cd frontend
+npm start              # Start development server
+npm run build          # Build for production
+npm run test           # Run tests
+```
 
 ## 📝 Changelog
 
-### Version 1.0.0
-- ✨ ระบบตรวจสอบ Uptime พื้นฐาน
-- ✨ ระบบตรวจสอบ SSL Certificate
-- ✨ Dashboard แสดงผล
-- ✨ ระบบแจ้งเตือน Email
+### Version 1.0.0 (Current)
+- ✨ Basic uptime monitoring
+- ✨ Domain expiry tracking
+- ✨ SSL certificate monitoring
+- ✨ Cloudflare integration
+- ✨ Real-time dashboard
+- ✨ Email notifications
+- ✨ Queue-based background jobs
+- ✨ JWT authentication
+- ✨ Swagger API documentation
 
-### Version 1.1.0 (Coming Soon)
+### Roadmap (v1.1.0+)
 - 🔄 Multi-region monitoring
-- 📱 Mobile app
-- 🔗 API integrations
-- 📊 Advanced analytics
+- 📱 Mobile app (React Native)
+- 🔗 Additional integrations (AWS Route 53, GoDaddy)
+- 📊 Advanced analytics and reporting
+- 🌍 Status page (public)
+- 📈 Historical data export
+- 🔔 Slack/Discord/Telegram notifications
+- 🎨 Customizable dashboard
 
 ## 📄 License
 
-โปรเจคนี้ใช้ license MIT - ดู [LICENSE](LICENSE) file สำหรับรายละเอียด
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 ทีมผู้พัฒนา
+## 👥 Team
 
-- **Lead Developer**: [Your Name]
-- **Backend Developer**: [Developer Name]
-- **Frontend Developer**: [Developer Name]
-- **DevOps Engineer**: [Engineer Name]
+Built with ❤️ by the Emika Team
 
-## 📞 ติดต่อ
+## 📞 Support
 
-- 📧 Email: support@your-domain.com
-- 🌐 Website: https://your-domain.com
-- 💬 Discord: https://discord.gg/your-server
-- 📱 LINE: @your-line-id
+- 📧 Email: support@example.com
+- 🐛 Issues: [GitHub Issues](https://github.com/emika-team/argi/issues)
+- 📖 Documentation: [Full Docs](./DEV_SETUP.md)
+- 💬 Discord: [Join our community](https://discord.gg/your-server)
 
 ---
 
-⭐ หากโปรเจคนี้มีประโยชน์กับคุณ อย่าลืม Star ⭐ ให้กับเราด้วยนะครับ! 
+⭐ If you find this project useful, please consider giving it a star! 
