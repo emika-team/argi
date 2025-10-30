@@ -8,7 +8,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { MonitorsModule } from './monitors/monitors.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { SslModule } from './ssl/ssl.module';
+// import { SslModule } from './ssl/ssl.module';
 import { DomainModule } from './domain/domain.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { BullBoardModule } from './bull-board/bull-board.module';
@@ -71,7 +71,7 @@ import { HealthController } from './health/health.controller';
     AuthModule,
     MonitorsModule,
     NotificationsModule,
-    SslModule,
+    // SslModule,
     DomainModule,
     DashboardModule,
     BullBoardModule,
