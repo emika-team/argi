@@ -31,25 +31,52 @@ export class CloudflareService {
     });
   }
 
-  private setCredentials(email: string, apiKey: string) {
-    this.axiosInstance.defaults.headers.common['X-Auth-Email'] = email;
-    this.axiosInstance.defaults.headers.common['X-Auth-Key'] = apiKey;
+  private setCredentials(email: string | undefined, apiKey: string) {
+    // Check if apiKey looks like an API Token
+    // API Tokens don't require email and use Bearer authentication
+    // Global API Keys are typically 37 characters, API Tokens are 40+ characters
+    const isApiToken = !email || email.trim() === '' || apiKey.length >= 40;
+    
+    if (isApiToken) {
+      // Use API Token authentication
+      this.axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${apiKey}`;
+      delete this.axiosInstance.defaults.headers.common['X-Auth-Email'];
+      delete this.axiosInstance.defaults.headers.common['X-Auth-Key'];
+      this.logger.debug(`Using API Token authentication (token length: ${apiKey.length})`);
+    } else {
+      // Use Global API Key authentication
+      this.axiosInstance.defaults.headers.common['X-Auth-Email'] = email;
+      this.axiosInstance.defaults.headers.common['X-Auth-Key'] = apiKey;
+      delete this.axiosInstance.defaults.headers.common['Authorization'];
+      this.logger.debug('Using Global API Key authentication');
+    }
   }
 
   async validateCredentials(credentials: CloudflareCredentialsDto): Promise<boolean> {
     try {
       this.setCredentials(credentials.email, credentials.apiKey);
       
-      const response = await this.axiosInstance.get<CloudflareApiResponse<any>>('/user');
+      // Use /user/tokens/verify for API tokens, /user for Global API Key
+      const isApiToken = !credentials.email || credentials.email.trim() === '' || credentials.apiKey.length >= 40;
+      const endpoint = isApiToken ? '/user/tokens/verify' : '/user';
+      
+      this.logger.debug(`Validating credentials using endpoint: ${endpoint}`);
+      
+      const response = await this.axiosInstance.get<CloudflareApiResponse<any>>(endpoint);
       
       if (!response.data.success) {
-        this.logger.error('Cloudflare API validation failed', response.data.errors);
+        this.logger.error('Cloudflare API validation failed', JSON.stringify(response.data.errors));
         return false;
       }
 
+      this.logger.log('Cloudflare credentials validated successfully');
       return true;
     } catch (error) {
-      this.logger.error('Failed to validate Cloudflare credentials', error.message);
+      this.logger.error('Failed to validate Cloudflare credentials', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
       return false;
     }
   }
@@ -58,7 +85,11 @@ export class CloudflareService {
     try {
       this.setCredentials(credentials.email, credentials.apiKey);
       
-      const response = await this.axiosInstance.get<CloudflareApiResponse<any>>('/user');
+      // For API tokens, use the verify endpoint to get token info
+      const isApiToken = !credentials.email || credentials.email.trim() === '' || credentials.apiKey.length >= 40;
+      const endpoint = isApiToken ? '/user/tokens/verify' : '/user';
+      
+      const response = await this.axiosInstance.get<CloudflareApiResponse<any>>(endpoint);
       
       if (!response.data.success) {
         throw new UnauthorizedException('Invalid Cloudflare credentials');

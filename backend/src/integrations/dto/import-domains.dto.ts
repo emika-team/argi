@@ -1,8 +1,9 @@
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
 export class CloudflareCredentialsDto {
-  @IsString()
-  email: string;
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @IsString()
   apiKey: string;
@@ -12,8 +13,9 @@ export class ImportDomainsDto {
   @IsString()
   userId: string;
 
-  @IsString()
-  email: string;
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @IsString()
   apiKey: string;
