@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, isValidObjectId } from 'mongoose';
 import * as whois from 'whois';
 
 import { Domain, DomainDocument } from './schemas/domain.schema';
@@ -25,7 +25,7 @@ export class DomainService {
   ) {}
 
   private isValidObjectId(id: string): boolean {
-    return Types.ObjectId.isValid(id);
+    return isValidObjectId(id);
   }
 
   async checkDomainExpiry(domain: string): Promise<DomainResult> {
