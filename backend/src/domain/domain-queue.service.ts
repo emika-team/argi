@@ -58,12 +58,36 @@ export class DomainQueueService implements OnModuleInit {
     try {
       // Dynamically create a new queue
       const Queue = require('bull');
-      const queue = new Queue(queueName, {
-        redis: {
+      
+      // Parse Redis URL if available
+      const redisUrl = process.env.REDIS_URL;
+      let redisConfig: any;
+      
+      if (redisUrl) {
+        const url = new URL(redisUrl);
+        const isTLS = url.protocol === 'rediss:';
+        
+        redisConfig = {
+          host: url.hostname,
+          port: parseInt(url.port) || 6379,
+          password: url.password || undefined,
+          username: url.username || undefined,
+          tls: isTLS ? {
+            rejectUnauthorized: false, // For DigitalOcean managed Redis
+          } : undefined,
+          // Bull v3 doesn't support maxRetriesPerRequest/enableReadyCheck on subscriber
+          // Use only the options that Bull supports
+        };
+      } else {
+        redisConfig = {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT) || 6379,
           password: process.env.REDIS_PASSWORD || undefined,
-        },
+        };
+      }
+      
+      const queue = new Queue(queueName, {
+        redis: redisConfig,
         defaultJobOptions: {
           removeOnComplete: 10,
           removeOnFail: 50,

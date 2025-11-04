@@ -40,10 +40,19 @@ import { HealthController } from './health/health.controller';
         if (redisUrl) {
           // Parse Redis URL if provided
           const url = new URL(redisUrl);
+          const isTLS = url.protocol === 'rediss:';
+          
           return {
             redis: {
               host: url.hostname,
               port: parseInt(url.port) || 6379,
+              password: url.password || undefined,
+              username: url.username || undefined,
+              tls: isTLS ? {
+                rejectUnauthorized: false, // For DigitalOcean managed Redis
+              } : undefined,
+              // Bull v3 doesn't support maxRetriesPerRequest on subscriber
+              // Use only the options that Bull supports
             },
           };
         }
@@ -52,6 +61,7 @@ import { HealthController } from './health/health.controller';
           redis: {
             host: configService.get('REDIS_HOST', 'localhost'),
             port: configService.get('REDIS_PORT', 6379),
+            password: configService.get('REDIS_PASSWORD', undefined),
           },
         };
       },
