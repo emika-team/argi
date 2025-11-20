@@ -60,8 +60,25 @@ export class DomainScheduler {
     }
   }
 
-  // Health check to ensure queue is working
+  // Auto check all active domains every 1 hour
   @Cron(CronExpression.EVERY_HOUR)
+  async autoCheckActiveDomains() {
+    this.logger.log('Running hourly domain check for all active domains...');
+
+    try {
+      // Add delay randomization to avoid bot detection
+      const delayMs = Math.floor(Math.random() * 30000); // 0-30 seconds random delay
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+
+      await this.domainQueueService.addAllDomainsCheck();
+      this.logger.log('Successfully scheduled all active domains for checking');
+    } catch (error) {
+      this.logger.error('Error in auto domain check:', error);
+    }
+  }
+
+  // Health check to ensure queue is working
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async queueHealthCheck() {
     try {
       const stats = await this.domainQueueService.getQueueStats();

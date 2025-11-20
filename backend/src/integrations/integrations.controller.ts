@@ -2,6 +2,7 @@ import {
   Controller, 
   Post, 
   Get, 
+  Delete,
   Body, 
   Param, 
   UseGuards, 
@@ -66,6 +67,73 @@ export class IntegrationsController {
       message: 'Cloudflare integration is available',
       provider: 'cloudflare',
       version: '1.0.0',
+    };
+  }
+
+  // New endpoints for managing stored Cloudflare credentials
+  @Post('cloudflare/credentials/:userId')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async saveCloudflareCredentials(
+    @Param('userId') userId: string,
+    @Body() credentials: CloudflareCredentialsDto
+  ) {
+    const saved = await this.integrationsService.saveCloudflareCredentials(userId, credentials);
+    return {
+      success: true,
+      message: 'Cloudflare credentials saved successfully',
+      data: {
+        userId: saved.userId,
+        email: saved.email,
+        lastValidatedAt: saved.lastValidatedAt,
+        isActive: saved.isActive,
+      },
+    };
+  }
+
+  @Get('cloudflare/credentials/:userId')
+  async getCloudflareCredentials(@Param('userId') userId: string) {
+    const credentials = await this.integrationsService.getCloudflareCredentials(userId);
+    return {
+      success: true,
+      data: {
+        userId: credentials.userId,
+        email: credentials.email,
+        lastValidatedAt: credentials.lastValidatedAt,
+        isActive: credentials.isActive,
+        hasCredentials: true,
+      },
+    };
+  }
+
+  @Delete('cloudflare/credentials/:userId')
+  @HttpCode(HttpStatus.OK)
+  async deleteCloudflareCredentials(@Param('userId') userId: string) {
+    await this.integrationsService.deleteCloudflareCredentials(userId);
+    return {
+      success: true,
+      message: 'Cloudflare credentials deleted successfully',
+    };
+  }
+
+  @Get('cloudflare/credentials/:userId/status')
+  async checkCloudflareCredentialsStatus(@Param('userId') userId: string) {
+    const hasCredentials = await this.integrationsService.hasCloudflareCredentials(userId);
+    return {
+      success: true,
+      data: {
+        hasCredentials,
+      },
+    };
+  }
+
+  @Post('cloudflare/import-with-stored/:userId')
+  @HttpCode(HttpStatus.OK)
+  async importWithStoredCredentials(@Param('userId') userId: string) {
+    const result = await this.integrationsService.importDomainsWithStoredCredentials(userId);
+    return {
+      success: true,
+      data: result,
     };
   }
 } 

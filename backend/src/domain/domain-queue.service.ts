@@ -299,6 +299,7 @@ export class DomainQueueService implements OnModuleInit {
   }
 
   // Method expected by DomainScheduler - triggers check for all domains
+  // Includes slow checking to avoid bot detection
   async addAllDomainsCheck(): Promise<void> {
     try {
       // Get DomainService dynamically to avoid circular dependency
@@ -307,10 +308,18 @@ export class DomainQueueService implements OnModuleInit {
       // Get all active domains
       const domains = await domainService.getAllActiveDomains();
       
-      this.logger.log(`Adding checks for ${domains.length} active domains`);
+      this.logger.log(`Adding checks for ${domains.length} active domains with slow checking enabled`);
       
-      // Add single check job for each domain
-      for (const domainData of domains) {
+      // Add single check job for each domain with delays to avoid bot detection
+      for (let i = 0; i < domains.length; i++) {
+        const domainData = domains[i];
+        
+        // Add randomized delay between domain checks (1-5 seconds)
+        if (i > 0) {
+          const delayMs = 1000 + Math.floor(Math.random() * 4000); // 1-5 seconds
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+        
         await this.addSingleDomainCheck(domainData.domain, domainData._id.toString());
       }
       
