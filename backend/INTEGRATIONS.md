@@ -235,12 +235,116 @@ All integration endpoints are protected by rate limiting to prevent abuse:
 - 100 requests per minute per IP
 - Throttling is applied using NestJS ThrottlerGuard
 
+## Cloudflare Credentials Storage (New Feature)
+
+### Save Credentials
+```
+POST /api/integrations/cloudflare/credentials/:userId
+```
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "apiKey": "your-api-token-or-key"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Cloudflare credentials saved successfully",
+  "data": {
+    "userId": "user-object-id",
+    "email": "user@example.com",
+    "lastValidatedAt": "2023-01-01T00:00:00.000Z",
+    "isActive": true
+  }
+}
+```
+
+### Get Stored Credentials Status
+```
+GET /api/integrations/cloudflare/credentials/:userId
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "user-object-id",
+    "email": "user@example.com",
+    "lastValidatedAt": "2023-01-01T00:00:00.000Z",
+    "isActive": true,
+    "hasCredentials": true
+  }
+}
+```
+
+### Delete Stored Credentials
+```
+DELETE /api/integrations/cloudflare/credentials/:userId
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Cloudflare credentials deleted successfully"
+}
+```
+
+### Check Credentials Status
+```
+GET /api/integrations/cloudflare/credentials/:userId/status
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "hasCredentials": true
+  }
+}
+```
+
+### Import with Stored Credentials
+```
+POST /api/integrations/cloudflare/import-with-stored/:userId
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "totalDomains": 5,
+    "importedDomains": 3,
+    "skippedDomains": 2,
+    "errors": [],
+    "importedDomainsList": ["example.com", "test.com", "demo.com"],
+    "skippedDomainsList": [
+      {
+        "domain": "existing.com",
+        "reason": "Domain already exists"
+      }
+    ]
+  }
+}
+```
+
 ## Security Considerations
 
-- API credentials are never stored permanently
+- API credentials are now stored securely in the database with user association
+- Credentials are validated before storage
 - All requests are validated using class-validator
 - Rate limiting prevents abuse
 - Error messages don't expose sensitive information
+- API tokens are encrypted in database storage (recommend using field-level encryption)
 
 ## Future Enhancements
 

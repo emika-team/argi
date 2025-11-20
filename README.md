@@ -165,6 +165,10 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 ENABLE_EMAIL_ALERTS=false
 
+# Slack Notifications (optional)
+ENABLE_SLACK_ALERTS=false
+SLACK_WEBHOOK_URL=your-slack-webhook-url
+
 # Monitoring
 DEFAULT_CHECK_INTERVAL=60
 SSL_CHECK_INTERVAL=86400
@@ -336,6 +340,8 @@ docker-compose down -v
 - **[Domain API Guide](./backend/DOMAIN_API.md)** - Domain monitoring API
 - **[Integration Examples](./backend/INTEGRATION_EXAMPLES.md)** - Third-party integrations
 - **[Monitoring Documentation](./backend/DOMAIN_MONITORING.md)** - Monitoring features
+- **[Slack Notifications](./backend/SLACK_NOTIFICATIONS.md)** - Slack integration setup and usage
+- **[Integrations Guide](./backend/INTEGRATIONS.md)** - Cloudflare and other provider integrations
 
 
 ## 🤝 Contributing
@@ -409,14 +415,20 @@ npm run test           # Run tests
 - ✨ JWT authentication
 - ✨ Swagger API documentation
 
-### Roadmap (v1.1.0+)
+### Recent Updates (v1.1.0)
+- ✅ **Slack Notifications**: Real-time domain expiry alerts in Slack
+- ✅ **Cloudflare Credentials Storage**: Store API credentials securely in database
+- ✅ **Hourly Domain Checks**: Auto-check all domains every hour with bot detection avoidance
+- ✅ **Slow Checking**: Randomized delays between checks to prevent rate limiting
+
+### Roadmap (v1.2.0+)
 - 🔄 Multi-region monitoring
 - 📱 Mobile app (React Native)
 - 🔗 Additional integrations (AWS Route 53, GoDaddy)
 - 📊 Advanced analytics and reporting
 - 🌍 Status page (public)
 - 📈 Historical data export
-- 🔔 Slack/Discord/Telegram notifications
+- 🔔 Discord/Telegram notifications
 - 🎨 Customizable dashboard
 
 ## 📄 License
