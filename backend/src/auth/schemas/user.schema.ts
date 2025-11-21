@@ -31,6 +31,20 @@ export class User {
 
   @Prop()
   resetPasswordExpires: Date;
+
+  // Telegram notification settings
+  @Prop()
+  telegramChatId: string;
+
+  @Prop({ default: false })
+  enableTelegramAlerts: boolean;
+
+  // Cloudflare integration settings
+  @Prop()
+  cloudflareEmail: string;
+
+  @Prop()
+  cloudflareApiKey: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User); 

@@ -9,6 +9,7 @@ import { DomainProcessorFactory, LegacyDomainProcessor } from './domain.processo
 import { DomainQueueService } from './domain-queue.service';
 import { Domain, DomainSchema } from './schemas/domain.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { User, UserSchema } from '../auth/schemas/user.schema';
       { name: Domain.name, schema: DomainSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    NotificationsModule,
     // Note: Individual domain queues will be created dynamically
     // No need to register a global domain queue here
   ],

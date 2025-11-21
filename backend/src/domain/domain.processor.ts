@@ -1,21 +1,37 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Job } from 'bull';
 import { DomainService } from './domain.service';
 import { DOMAIN_MONITORING_QUEUE_PREFIX, DomainMonitoringJob } from './domain-queue.service';
+import { TelegramService } from '../notifications/telegram.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 
 @Injectable()
 export class DomainProcessorFactory {
   private readonly logger = new Logger(DomainProcessorFactory.name);
   private processors: Map<string, DomainProcessor> = new Map();
 
-  constructor(private readonly domainService: DomainService) {}
+  constructor(
+    private readonly domainService: DomainService,
+    private readonly telegramService: TelegramService,
+    private readonly notificationsService: NotificationsService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>
+  ) {}
 
   createProcessorForDomain(domain: string): DomainProcessor {
     if (this.processors.has(domain)) {
       return this.processors.get(domain);
     }
 
-    const processor = new DomainProcessor(domain, this.domainService);
+    const processor = new DomainProcessor(
+      domain,
+      this.domainService,
+      this.telegramService,
+      this.notificationsService,
+      this.userModel
+    );
     this.processors.set(domain, processor);
     
     this.logger.log(`Created processor for domain: ${domain}`);
@@ -41,7 +57,10 @@ export class DomainProcessor {
 
   constructor(
     private readonly domain: string,
-    private readonly domainService: DomainService
+    private readonly domainService: DomainService,
+    private readonly telegramService: TelegramService,
+    private readonly notificationsService: NotificationsService,
+    private readonly userModel: Model<UserDocument>
   ) {}
 
   async processJob(job: Job<DomainMonitoringJob>) {
@@ -73,10 +92,18 @@ export class DomainProcessor {
         return;
       }
 
+      // Add a small delay to avoid bot detection (slow check)
+      await this.sleep(2000 + Math.random() * 3000); // Random delay between 2-5 seconds
+
       const result = await this.domainService.checkDomainExpiry(domain);
       
       if (domainId) {
         await this.domainService.updateDomainStatus(domainId, result);
+
+        // Send notifications if domain is expiring soon or expired
+        if (!result.error && (result.isExpiringSoon || result.isExpired)) {
+          await this.sendNotifications(domainId, result);
+        }
       }
 
       if (result.error) {
@@ -92,6 +119,52 @@ export class DomainProcessor {
       this.logger.error(`Error checking domain ${domain}:`, error);
       throw error;
     }
+  }
+
+  private async sendNotifications(domainId: string, result: any) {
+    try {
+      // Get domain details to find userId
+      const domainDoc = await this.domainService['domainModel'].findById(domainId).exec();
+      if (!domainDoc || !domainDoc.userId) {
+        this.logger.warn(`Domain ${domainId} not found or has no userId`);
+        return;
+      }
+
+      // Get user details for notification settings
+      const user = await this.userModel.findById(domainDoc.userId).exec();
+      if (!user) {
+        this.logger.warn(`User ${domainDoc.userId} not found`);
+        return;
+      }
+
+      // Send Telegram notification if enabled
+      if (user.enableTelegramAlerts && user.telegramChatId) {
+        await this.telegramService.sendDomainExpiryAlert(
+          user.telegramChatId,
+          result.domain,
+          result.daysUntilExpiry,
+          new Date(result.expiryDate)
+        );
+      }
+
+      // Send email notification if enabled and domain has alerts enabled
+      if (domainDoc.enableExpiryAlerts && user.email) {
+        await this.notificationsService.sendDomainExpiryAlert(
+          result.domain,
+          result.daysUntilExpiry,
+          new Date(result.expiryDate),
+          [user.email]
+        );
+      }
+
+      this.logger.log(`Notifications sent for domain ${result.domain}`);
+    } catch (error) {
+      this.logger.error(`Error sending notifications for domain ${domainId}:`, error);
+    }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   getDomain(): string {

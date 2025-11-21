@@ -1,7 +1,10 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CloudflareService } from './cloudflare/cloudflare.service';
 import { DomainService } from '../domain/domain.service';
 import { ImportDomainsDto, CloudflareCredentialsDto } from './dto/import-domains.dto';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 
 export interface ImportResult {
   success: boolean;
@@ -20,6 +23,7 @@ export class IntegrationsService {
   constructor(
     private cloudflareService: CloudflareService,
     private domainService: DomainService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   async validateCloudflareCredentials(credentials: CloudflareCredentialsDto): Promise<{ valid: boolean; userInfo?: any }> {
@@ -48,15 +52,29 @@ export class IntegrationsService {
   }
 
   async importDomainsFromCloudflare(importDto: ImportDomainsDto): Promise<ImportResult> {
-    const credentials: CloudflareCredentialsDto = {
+    let credentials: CloudflareCredentialsDto = {
       email: importDto.email,
       apiKey: importDto.apiKey,
     };
+
+    // If credentials are not provided, try to get from user's stored credentials
+    if (!credentials.email && !credentials.apiKey) {
+      const storedCreds = await this.getStoredCloudflareCredentials(importDto.userId);
+      if (!storedCreds) {
+        throw new BadRequestException('No Cloudflare credentials provided or stored');
+      }
+      credentials = storedCreds;
+    }
 
     // Validate credentials first
     const validation = await this.validateCloudflareCredentials(credentials);
     if (!validation.valid) {
       throw new BadRequestException('Invalid Cloudflare credentials');
+    }
+
+    // Store credentials for future use if they were provided in the request
+    if (importDto.email && importDto.apiKey) {
+      await this.storeCloudflareCredentials(importDto.userId, credentials);
     }
 
     // Get zones from Cloudflare
@@ -146,5 +164,46 @@ export class IntegrationsService {
     });
 
     return summary;
+  }
+
+  async storeCloudflareCredentials(userId: string, credentials: CloudflareCredentialsDto): Promise<void> {
+    try {
+      await this.userModel.findByIdAndUpdate(userId, {
+        cloudflareEmail: credentials.email,
+        cloudflareApiKey: credentials.apiKey,
+      });
+      this.logger.log(`Cloudflare credentials stored for user ${userId}`);
+    } catch (error) {
+      this.logger.error(`Failed to store Cloudflare credentials for user ${userId}:`, error);
+      throw new BadRequestException('Failed to store Cloudflare credentials');
+    }
+  }
+
+  async getStoredCloudflareCredentials(userId: string): Promise<CloudflareCredentialsDto | null> {
+    try {
+      const user = await this.userModel.findById(userId).select('cloudflareEmail cloudflareApiKey').exec();
+      
+      if (!user || !(user as any).cloudflareEmail || !(user as any).cloudflareApiKey) {
+        return null;
+      }
+
+      return {
+        email: (user as any).cloudflareEmail,
+        apiKey: (user as any).cloudflareApiKey,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to retrieve Cloudflare credentials for user ${userId}:`, error);
+      return null;
+    }
+  }
+
+  async getCloudflareZonesForUser(userId: string): Promise<any[]> {
+    const credentials = await this.getStoredCloudflareCredentials(userId);
+    
+    if (!credentials) {
+      throw new BadRequestException('No Cloudflare credentials stored for this user');
+    }
+
+    return this.getCloudflareZones(credentials);
   }
 } 

@@ -69,4 +69,46 @@ export class AuthService {
   async findByEmail(email: string): Promise<UserDocument> {
     return this.userModel.findOne({ email }).select('-password');
   }
+
+  async updateUserSettings(userId: string, updates: any): Promise<UserDocument> {
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true }
+    ).select('-password');
+    
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    
+    return user;
+  }
+
+  async getUserSettings(userId: string): Promise<any> {
+    const user = await this.userModel.findById(userId).select('telegramChatId enableTelegramAlerts cloudflareEmail');
+    
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    
+    return {
+      telegramChatId: user.telegramChatId,
+      enableTelegramAlerts: user.enableTelegramAlerts,
+      hasCloudflareCredentials: !!(user as any).cloudflareEmail && !!(user as any).cloudflareApiKey,
+      cloudflareEmail: (user as any).cloudflareEmail,
+    };
+  }
+
+  async getCloudflareCredentials(userId: string): Promise<{ email: string; apiKey: string } | null> {
+    const user = await this.userModel.findById(userId).select('cloudflareEmail cloudflareApiKey');
+    
+    if (!user || !(user as any).cloudflareEmail || !(user as any).cloudflareApiKey) {
+      return null;
+    }
+    
+    return {
+      email: (user as any).cloudflareEmail,
+      apiKey: (user as any).cloudflareApiKey,
+    };
+  }
 } 

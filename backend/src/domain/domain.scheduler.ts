@@ -12,10 +12,10 @@ export class DomainScheduler {
     private readonly domainQueueService: DomainQueueService
   ) {}
 
-  // Backup job that runs every 6 hours in case queue is not working
-  @Cron(CronExpression.EVERY_6_HOURS)
+  // Backup job that runs every 1 hour in case queue is not working
+  @Cron(CronExpression.EVERY_HOUR)
   async backupDomainCheck() {
-    this.logger.log('Running backup domain expiry check (every 6 hours)...');
+    this.logger.log('Running backup domain expiry check (every 1 hour)...');
 
     try {
       const queueStats = await this.domainQueueService.getQueueStats();
@@ -33,10 +33,15 @@ export class DomainScheduler {
       if (expiringDomains.length > 0) {
         this.logger.warn(`Backup check found ${expiringDomains.length} expiring domains`);
         
+        // Trigger individual checks for expiring domains with slow rate to avoid bot detection
         for (const domain of expiringDomains) {
           this.logger.warn(
             `Backup check - Domain ${domain.domain} is expiring in ${domain.lastDaysUntilExpiry} days`
           );
+          // Add a check job for this domain
+          await this.domainQueueService.addSingleDomainCheck(domain.domain, domain._id.toString());
+          // Add delay between checks to avoid bot detection
+          await this.sleep(3000 + Math.random() * 2000); // 3-5 seconds between checks
         }
       } else {
         this.logger.log('Backup check - No expiring domains found');
@@ -85,5 +90,9 @@ export class DomainScheduler {
     } catch (error) {
       this.logger.error('Error in queue health check:', error);
     }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 } 
