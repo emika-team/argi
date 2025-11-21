@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DomainService } from './domain.service';
 import { DomainQueueService } from './domain-queue.service';
@@ -6,11 +7,19 @@ import { DomainQueueService } from './domain-queue.service';
 @Injectable()
 export class DomainScheduler {
   private readonly logger = new Logger(DomainScheduler.name);
+  private readonly enableSlowChecks: boolean;
+  private readonly minDelayMs: number;
+  private readonly maxDelayMs: number;
 
   constructor(
     private readonly domainService: DomainService,
-    private readonly domainQueueService: DomainQueueService
-  ) {}
+    private readonly domainQueueService: DomainQueueService,
+    private readonly configService: ConfigService
+  ) {
+    this.enableSlowChecks = this.configService.get('ENABLE_SLOW_DOMAIN_CHECKS', 'true') === 'true';
+    this.minDelayMs = parseInt(this.configService.get('MIN_CHECK_DELAY_MS', '2000'), 10);
+    this.maxDelayMs = parseInt(this.configService.get('MAX_CHECK_DELAY_MS', '5000'), 10);
+  }
 
   // Backup job that runs every 1 hour in case queue is not working
   @Cron(CronExpression.EVERY_HOUR)
@@ -40,8 +49,12 @@ export class DomainScheduler {
           );
           // Add a check job for this domain
           await this.domainQueueService.addSingleDomainCheck(domain.domain, domain._id.toString());
-          // Add delay between checks to avoid bot detection
-          await this.sleep(3000 + Math.random() * 2000); // 3-5 seconds between checks
+          
+          // Add delay between checks to avoid bot detection if enabled
+          if (this.enableSlowChecks) {
+            const delay = this.minDelayMs + Math.random() * (this.maxDelayMs - this.minDelayMs);
+            await this.sleep(delay);
+          }
         }
       } else {
         this.logger.log('Backup check - No expiring domains found');

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { Job } from 'bull';
 import { DomainService } from './domain.service';
@@ -17,7 +18,8 @@ export class DomainProcessorFactory {
     private readonly domainService: DomainService,
     private readonly telegramService: TelegramService,
     private readonly notificationsService: NotificationsService,
-    @InjectModel(User.name) private userModel: Model<UserDocument>
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly configService: ConfigService
   ) {}
 
   createProcessorForDomain(domain: string): DomainProcessor {
@@ -30,7 +32,8 @@ export class DomainProcessorFactory {
       this.domainService,
       this.telegramService,
       this.notificationsService,
-      this.userModel
+      this.userModel,
+      this.configService
     );
     this.processors.set(domain, processor);
     
@@ -54,14 +57,22 @@ export class DomainProcessorFactory {
 
 export class DomainProcessor {
   private readonly logger = new Logger(`DomainProcessor-${this.domain}`);
+  private readonly enableSlowChecks: boolean;
+  private readonly minDelayMs: number;
+  private readonly maxDelayMs: number;
 
   constructor(
     private readonly domain: string,
     private readonly domainService: DomainService,
     private readonly telegramService: TelegramService,
     private readonly notificationsService: NotificationsService,
-    private readonly userModel: Model<UserDocument>
-  ) {}
+    private readonly userModel: Model<UserDocument>,
+    private readonly configService: ConfigService
+  ) {
+    this.enableSlowChecks = this.configService.get('ENABLE_SLOW_DOMAIN_CHECKS', 'true') === 'true';
+    this.minDelayMs = parseInt(this.configService.get('MIN_CHECK_DELAY_MS', '2000'), 10);
+    this.maxDelayMs = parseInt(this.configService.get('MAX_CHECK_DELAY_MS', '5000'), 10);
+  }
 
   async processJob(job: Job<DomainMonitoringJob>) {
     const { type, domain, domainId } = job.data;
@@ -92,8 +103,12 @@ export class DomainProcessor {
         return;
       }
 
-      // Add a small delay to avoid bot detection (slow check)
-      await this.sleep(2000 + Math.random() * 3000); // Random delay between 2-5 seconds
+      // Add a small delay to avoid bot detection (slow check) if enabled
+      if (this.enableSlowChecks) {
+        const delay = this.minDelayMs + Math.random() * (this.maxDelayMs - this.minDelayMs);
+        await this.sleep(delay);
+        this.logger.debug(`Added ${Math.round(delay)}ms delay for bot detection avoidance`);
+      }
 
       const result = await this.domainService.checkDomainExpiry(domain);
       
@@ -124,7 +139,7 @@ export class DomainProcessor {
   private async sendNotifications(domainId: string, result: any) {
     try {
       // Get domain details to find userId
-      const domainDoc = await this.domainService['domainModel'].findById(domainId).exec();
+      const domainDoc = await this.domainService.getDomainById(domainId);
       if (!domainDoc || !domainDoc.userId) {
         this.logger.warn(`Domain ${domainId} not found or has no userId`);
         return;

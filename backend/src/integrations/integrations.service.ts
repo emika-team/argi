@@ -169,7 +169,7 @@ export class IntegrationsService {
   async storeCloudflareCredentials(userId: string, credentials: CloudflareCredentialsDto): Promise<void> {
     try {
       await this.userModel.findByIdAndUpdate(userId, {
-        cloudflareEmail: credentials.email,
+        cloudflareEmail: credentials.email || '',
         cloudflareApiKey: credentials.apiKey,
       });
       this.logger.log(`Cloudflare credentials stored for user ${userId}`);
@@ -183,13 +183,13 @@ export class IntegrationsService {
     try {
       const user = await this.userModel.findById(userId).select('cloudflareEmail cloudflareApiKey').exec();
       
-      if (!user || !(user as any).cloudflareEmail || !(user as any).cloudflareApiKey) {
+      if (!user || !user.cloudflareApiKey) {
         return null;
       }
 
       return {
-        email: (user as any).cloudflareEmail,
-        apiKey: (user as any).cloudflareApiKey,
+        email: user.cloudflareEmail || '',
+        apiKey: user.cloudflareApiKey,
       };
     } catch (error) {
       this.logger.error(`Failed to retrieve Cloudflare credentials for user ${userId}:`, error);

@@ -94,21 +94,21 @@ export class AuthService {
     return {
       telegramChatId: user.telegramChatId,
       enableTelegramAlerts: user.enableTelegramAlerts,
-      hasCloudflareCredentials: !!(user as any).cloudflareEmail && !!(user as any).cloudflareApiKey,
-      cloudflareEmail: (user as any).cloudflareEmail,
+      hasCloudflareCredentials: !!user.cloudflareEmail && !!user.cloudflareApiKey,
+      cloudflareEmail: user.cloudflareEmail,
     };
   }
 
   async getCloudflareCredentials(userId: string): Promise<{ email: string; apiKey: string } | null> {
     const user = await this.userModel.findById(userId).select('cloudflareEmail cloudflareApiKey');
     
-    if (!user || !(user as any).cloudflareEmail || !(user as any).cloudflareApiKey) {
+    if (!user || !user.cloudflareEmail || !user.cloudflareApiKey) {
       return null;
     }
     
     return {
-      email: (user as any).cloudflareEmail,
-      apiKey: (user as any).cloudflareApiKey,
+      email: user.cloudflareEmail,
+      apiKey: user.cloudflareApiKey,
     };
   }
 } 
