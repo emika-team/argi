@@ -229,6 +229,13 @@ export class DomainService {
     return this.domainModel.find({ isActive: true }).exec();
   }
 
+  async getDomainById(domainId: string): Promise<DomainDocument | null> {
+    if (!this.isValidObjectId(domainId)) {
+      throw new BadRequestException('Invalid domain ID format');
+    }
+    return this.domainModel.findById(domainId).exec();
+  }
+
   // Backward compatibility methods for existing API
   async addDomainToUserLegacy(domain: string, userId: string): Promise<{ success: boolean; message: string; domain?: string }> {
     try {

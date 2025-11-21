@@ -68,4 +68,14 @@ export class IntegrationsController {
       version: '1.0.0',
     };
   }
+
+  @Get('cloudflare/zones/:userId')
+  async getZonesForUser(@Param('userId') userId: string) {
+    const zones = await this.integrationsService.getCloudflareZonesForUser(userId);
+    return {
+      success: true,
+      data: zones,
+      count: zones.length,
+    };
+  }
 } 

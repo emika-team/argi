@@ -65,8 +65,9 @@ A complete monitoring solution for tracking website uptime, domain expiration da
 
 ### External Services
 - **WHOIS**: Domain expiry lookups
-- **Cloudflare API**: Domain import
+- **Cloudflare API**: Domain import with stored credentials
 - **Email**: Nodemailer (SMTP)
+- **Telegram**: Bot API for notifications
 
 ## 🚀 Quick Start
 
@@ -138,8 +139,9 @@ docker-compose down
 ### Setting Up Alerts
 1. Navigate to "Settings"
 2. Configure email SMTP settings
-3. Set alert thresholds
-4. Test notification delivery
+3. Set up Telegram bot notifications (optional) - See [TELEGRAM_NOTIFICATIONS.md](./backend/TELEGRAM_NOTIFICATIONS.md)
+4. Set alert thresholds
+5. Test notification delivery
 
 ## 🔧 Configuration
 
@@ -165,10 +167,14 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 ENABLE_EMAIL_ALERTS=false
 
+# Telegram (optional)
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+ENABLE_TELEGRAM_ALERTS=false
+
 # Monitoring
 DEFAULT_CHECK_INTERVAL=60
 SSL_CHECK_INTERVAL=86400
-DOMAIN_CHECK_INTERVAL=86400
+DOMAIN_CHECK_INTERVAL=3600       # Domain checks every hour (3600 seconds)
 MAX_RETRIES=3
 TIMEOUT=30000
 ```
@@ -336,6 +342,8 @@ docker-compose down -v
 - **[Domain API Guide](./backend/DOMAIN_API.md)** - Domain monitoring API
 - **[Integration Examples](./backend/INTEGRATION_EXAMPLES.md)** - Third-party integrations
 - **[Monitoring Documentation](./backend/DOMAIN_MONITORING.md)** - Monitoring features
+- **[Telegram Notifications](./backend/TELEGRAM_NOTIFICATIONS.md)** - Setup Telegram bot alerts
+- **[Cloudflare Credentials](./backend/CLOUDFLARE_CREDENTIALS.md)** - Store Cloudflare API tokens
 
 
 ## 🤝 Contributing
@@ -409,14 +417,21 @@ npm run test           # Run tests
 - ✨ JWT authentication
 - ✨ Swagger API documentation
 
-### Roadmap (v1.1.0+)
+### Recent Updates (v1.1.0)
+- ✅ Telegram bot notifications for domain expiry alerts
+- ✅ Cloudflare API credentials storage in database
+- ✅ Hourly automated domain checks with bot detection avoidance
+- ✅ User-specific notification preferences
+- ✅ Comprehensive documentation for new features
+
+### Roadmap (v1.2.0+)
 - 🔄 Multi-region monitoring
 - 📱 Mobile app (React Native)
 - 🔗 Additional integrations (AWS Route 53, GoDaddy)
 - 📊 Advanced analytics and reporting
 - 🌍 Status page (public)
 - 📈 Historical data export
-- 🔔 Slack/Discord/Telegram notifications
+- 🔔 Slack/Discord notifications
 - 🎨 Customizable dashboard
 
 ## 📄 License
